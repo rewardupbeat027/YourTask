@@ -4,9 +4,9 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import generics, status
 from django.shortcuts import render
 from rest_framework.response import Response
-
+from rest_framework_simplejwt.views import TokenObtainPairView
 from .models import Task
-from .serializers import TaskSerializer, TaskDetailSerializer, ProfileSerializer
+from .serializers import TaskSerializer, TaskDetailSerializer, ProfileSerializer, MyTokenObtainPairSerializer
 
 
 # Create your views here.
@@ -18,6 +18,9 @@ class TaskAPIView(generics.ListCreateAPIView, generics.ListAPIView):
     def get_queryset(self):
         queryset = Task.objects.all().filter(user=self.request.user.id)
         return queryset
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
 
 
 class TaskDetailAPIView(generics.ListAPIView, generics.UpdateAPIView, generics.RetrieveAPIView,
@@ -47,3 +50,7 @@ class UserRegistrationView(generics.CreateAPIView):
             return Response(data, status=status.HTTP_201_CREATED)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class MyTokenObtainPairView(TokenObtainPairView):
+    serializer_class = MyTokenObtainPairSerializer
